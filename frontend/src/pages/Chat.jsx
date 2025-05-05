@@ -29,28 +29,38 @@ function Chat() {
 
   const sendMessage = async () => {
     if (!input.trim()) return;
-
+  
     const userMessage = { from: 'user', text: input };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setError(null);
     setIsLoading(true);
-
+  
+    // Check for greetings
+    const normalizedInput = input.trim().toLowerCase();
+    if (["hi", "hello", "hey"].includes(normalizedInput)) {
+      const botMessage = { from: 'bot', text: 'Hello! How may I assist you?' };
+      setTimeout(() => {
+        setMessages(prev => [...prev, botMessage]);
+        setIsLoading(false);
+      }, 500); // Simulate quick typing
+      return;
+    }
+  
     try {
       const response = await fetch('http://127.0.0.1:8080/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: input })
       });
-
+  
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
-
+  
       const data = await response.json();
       const botMessage = { from: 'bot', text: data.response };
-      
-      // Add small delay to simulate typing
+  
       setTimeout(() => {
         setMessages(prev => [...prev, botMessage]);
         setIsLoading(false);
@@ -61,6 +71,7 @@ function Chat() {
       setIsLoading(false);
     }
   };
+  
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
